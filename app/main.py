@@ -1,8 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from typing import Dict, Any
+from pydantic import BaseModel
+from typing import Dict, Any, List
 import json
+import os
+import logging
+
+from app.config.settings import settings
+from app.services.model_manager import model_manager
 from datetime import datetime
 
 from app.core.plugin_registry import plugin_registry
@@ -33,6 +40,96 @@ async def startup_event():
 async def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
+@app.get("/api/models/status")
+async def get_model_status():
+    """Get current model manager status"""
+    try:
+        status = await model_manager.get_status()
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting model status: {str(e)}")
+
+@app.post("/api/models/analyze")
+async def direct_llm_analysis(input_data: Dict[str, Any]):
+    """Direct LLM analysis without plugin system"""
+    try:
+        result = await model_manager.analyze_pr_conversation(input_data)
+        return {
+            "analysis": result,
+            "model_info": {
+                "primary_model": settings.primary_model,
+                "critic_model": settings.critic_model,
+                "critique_enabled": settings.enable_critique
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
+
+@app.post("/api/models/test-tin-analysis")
+async def test_tin_sidekick_llm_analysis():
+    """Test LLM analysis with real TIN Sidekick PR data"""
+    try:
+        # Create realistic TIN Sidekick PR conversation data
+        test_pr_data = {
+            "pr_number": 1,
+            "repository": "mvara-ai/tin-sidekick",
+            "title": "TIN Sidekick Integration - COMPLETE SYSTEM OVERHAUL",
+            "conversation": """
+Comment 1 by jackccrawford:
+Starting comprehensive integration of TIN Sidekick Flutter app with TIN v3 API. 
+Current issues: Authentication using wrong endpoints, message format mismatches, UI showing duplicate messages.
+
+Comment 2 by devin-ai-integration[bot]:
+I'll help analyze the authentication flow. The app is using legacy /dev/token endpoints instead of the new TIN v3 two-step auth process. 
+We need to update to use /api/v3/auth/login with proper JWT handling.
+
+Comment 3 by jackccrawford:
+Good catch! Also noticing the message sending payload is wrong. TIN v3 expects JSON object as string in payload field, not direct JSON.
+
+Comment 4 by devin-ai-integration[bot]:
+Exactly! Let me implement the fix for message payload format. Also adding duplicate detection in ChatService to prevent UI issues.
+
+Comment 5 by jackccrawford:
+Breakthrough moment - the "CODE IS TRUTH" principle is key here. We need to verify against actual API responses, not documentation assumptions.
+
+Comment 6 by devin-ai-integration[bot]:
+Implemented comprehensive fixes: 
+1. Updated authentication to TIN v3 format
+2. Fixed message payload JSON structure  
+3. Added smart deduplication in ChatService
+4. Enhanced error handling throughout
+
+Comment 7 by jackccrawford:
+Testing shows zero runtime crashes now! The empirical approach worked perfectly. This represents a complete transformation from broken prototype to production-ready platform.
+
+Comment 8 by devin-ai-integration[bot]:
+Success! The multi-agent collaboration between human insight, AI analysis, and systematic testing created a robust solution. 
+Ready for Phase 2 systematic prevention measures.
+""",
+            "participants": ["jackccrawford", "devin-ai-integration[bot]"],
+            "created_at": "2025-07-21T18:00:00+00:00"
+        }
+        
+        result = await model_manager.analyze_pr_conversation(test_pr_data)
+        return {
+            "message": "TIN Sidekick PR analysis completed",
+            "analysis": result,
+            "model_info": {
+                "primary_model": settings.primary_model,
+                "critic_model": settings.critic_model,
+                "critique_enabled": settings.enable_critique
+            },
+            "test_data_info": {
+                "pr_title": test_pr_data["title"],
+                "participants": test_pr_data["participants"],
+                "comment_count": test_pr_data["conversation"].count("Comment")
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Test analysis error: {str(e)}")
+
 @app.get("/api/plugins")
 async def list_plugins():
     """List all available plugins"""
@@ -43,15 +140,23 @@ async def list_plugins():
 
 @app.post("/api/plugins/repo-to-graph/analyze")
 async def analyze_pr_conversation(input_data: Dict[str, Any]):
-    """Analyze PR conversation and generate knowledge graph"""
+    """Analyze PR conversation and generate knowledge graph using smart model manager"""
     try:
+        # Use the smart model manager for analysis
+        analysis_result = await model_manager.analyze_pr_conversation(input_data)
+        
+        # Also run through plugin system for compatibility
         plugin = plugin_registry.get_plugin("repo-to-graph")
-        result = await plugin.execute(input_data)
+        plugin_result = await plugin.execute(input_data)
         
-        if not result.success:
-            raise HTTPException(status_code=400, detail=result.error)
+        if not plugin_result.success:
+            raise HTTPException(status_code=400, detail=plugin_result.error)
         
-        return result.dict()
+        # Combine results
+        combined_result = plugin_result.dict()
+        combined_result["llm_analysis"] = analysis_result
+        
+        return combined_result
     
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

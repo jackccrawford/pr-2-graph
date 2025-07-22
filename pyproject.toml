@@ -11,12 +11,15 @@ license = "MIT"
 homepage = "https://github.com/jackccrawford/pr-2-graph"
 repository = "https://github.com/jackccrawford/pr-2-graph"
 keywords = ["github", "pr", "analysis", "knowledge-graph", "collaboration", "visualization"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.116.1"}
 psycopg = {extras = ["binary"], version = "^3.2.9"}
+python-dotenv = "^1.0.0"
 httpx = "^0.28.1"
+pydantic-settings = "^2.10.1"
 
 
 [build-system]
