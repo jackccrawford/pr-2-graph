@@ -21,12 +21,43 @@ pr-2-graph is an open-source tool that analyzes GitHub Pull Request conversation
 
 ## Architecture: Multi-Model LLM Analysis Pipeline
 
-This system follows a sophisticated multi-stage analysis pattern:
+pr-2-graph uses a sophisticated three-stage LLM pipeline with custom Ollama models, each specialized for specific aspects of PR conversation analysis:
 
-1. **Primary Analysis**: Advanced LLM models extract semantic relationships and collaboration patterns
-2. **Critic Review**: Secondary models validate analysis accuracy and completeness
-3. **Structured Output**: Specialized formatter models ensure consistent JSON output
-4. **Interactive Visualization**: D3.js physics-based knowledge graphs with real-time interaction
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   pr-analyzer   │───▶│   pr-critic      │───▶│  pr-formatter   │
+│   (Primary)     │    │   (Quality)      │    │  (Structure)    │
+│ gemma3n:e2b base│    │ qwen3:1.7b base  │    │ phi4-mini base  │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+        ▲                        ▲                        ▲
+        │                        │                        │
+   Modelfile with           Modelfile with          Modelfile with
+   PR analysis              critique focus          JSON formatting
+   instructions             instructions            instructions
+```
+
+### Model Specialization
+
+1. **pr-analyzer** (Primary Analysis)
+   - **Base Model**: gemma3n:e2b (5.6GB)
+   - **Purpose**: Extract semantic relationships, identify collaboration patterns, detect breakthrough moments
+   - **Specialization**: GitHub PR conversation analysis with focus on multi-agent workflows
+
+2. **pr-critic** (Quality Review)
+   - **Base Model**: qwen3:1.7b (1.4GB)
+   - **Purpose**: Validate analysis accuracy, identify missing elements, suggest improvements
+   - **Specialization**: Quality assurance for PR analysis with focus on completeness and consistency
+
+3. **pr-formatter** (Structured Output)
+   - **Base Model**: phi4-mini:3.8b (2.5GB)
+   - **Purpose**: Extract and format analysis into structured JSON, ensure data consistency
+   - **Specialization**: JSON formatting and data structure validation
+
+### Pipeline Benefits
+- **Memory Efficient**: Models loaded/unloaded dynamically based on system resources
+- **Quality Assured**: Multi-stage validation ensures accurate and complete analysis
+- **Specialized Performance**: Each model optimized for its specific task
+- **Fallback Support**: Graceful degradation when models are unavailable
 
 ## Key Features
 
@@ -66,41 +97,102 @@ This system follows a sophisticated multi-stage analysis pattern:
 
 - Python 3.12+
 - Poetry for dependency management
+- [Ollama](https://ollama.ai/) for local LLM inference
+- Git for version control
 
 ### Local Development
 
 ```bash
+# Clone repository
+git clone https://github.com/your-username/pr-2-graph.git
+cd pr-2-graph
+
 # Install dependencies
 poetry install
 
-# Start development server
-poetry run fastapi dev app/main.py
+# Set up custom Ollama models
+cd ollama-models
+./setup_pr_models.sh
+
+# Configure environment
+cp .env .env.local
+# Edit .env.local with your settings
+
+# Start server with custom models
+./run_server.sh
+```
+
+### Custom Model Setup
+
+The system uses three specialized Ollama models. Run the setup script to create them:
+
+```bash
+cd ollama-models
+./setup_pr_models.sh
+```
+
+This creates:
+- `pr-analyzer:latest` - Primary PR conversation analysis
+- `pr-critic:latest` - Quality review and validation
+- `pr-formatter:latest` - JSON formatting and structure
+
+Update your `.env.local` to use these models:
+```bash
+PRIMARY_MODEL=pr-analyzer:latest
+CRITIC_MODEL=pr-critic:latest
+FORMATTER_MODEL=pr-formatter:latest
 ```
 
 ### Testing
 
 ```bash
 # Health check
-curl -X GET http://127.0.0.1:8000/health
+curl -X GET http://localhost:7700/health
 
-# List plugins
-curl -X GET http://127.0.0.1:8000/api/plugins
+# Model manager status
+curl -X GET http://localhost:7700/api/models/status
 
-# Test tin-sidekick analysis (keyword-based)
-curl -X POST http://127.0.0.1:8000/api/plugins/repo-to-graph/test-tin-sidekick
+# Test with TIN Sidekick PR data
+curl -X POST http://localhost:7700/api/models/test-tin-analysis
 
-# Test LLM-enhanced analysis
-curl -X POST http://127.0.0.1:8000/api/plugins/repo-to-graph/test-llm-analysis
+# Test with TIN Docs PR data
+curl -X POST http://localhost:7700/api/models/test-tin-docs-analysis
 
-# View interactive visualization (replace {analysis_id} with actual ID)
-# Open in browser: http://127.0.0.1:8000/api/plugins/repo-to-graph/visualize/{analysis_id}
+# Test with HuggingFace PR data
+curl -X POST http://localhost:7700/api/models/test-huggingface-analysis
+
+# Direct LLM analysis
+curl -X POST http://localhost:7700/api/models/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"conversation": "Your PR conversation text here"}'
+
+# Interactive API documentation
+# Open in browser: http://localhost:7700/docs
 ```
 
 ## Test Results
 
-### tin-sidekick PR Analysis
+### Multi-Model Pipeline Performance
 
-Successfully analyzed the tin-sidekick PR #1 conversation with:
+Our custom Ollama models demonstrate significant improvements over generic prompts:
+
+| **Test Case** | **Confidence** | **Participants** | **Relationships** | **Breakthrough Moments** |
+|---------------|----------------|------------------|-------------------|-------------------------|
+| TIN Sidekick PR | 0.7 | 2 | 2 | 1 ("CODE IS TRUTH") |
+| TIN Docs PR | 0.7 | 1 | 3 | 0 |
+| HuggingFace PR | **0.85** | **5** | **5** | **2** |
+
+### Real-World Analysis Examples
+
+#### HuggingFace Transformers PR #39561
+**Collaboration Pattern**: maintainer_coordination_with_automation
+- **Human Contributors**: vasqu (issue identifier), molbap & ArthurZucker (maintainers)
+- **Automation**: github-actions (testing), HuggingFaceDocBuilderDev (docs)
+- **Key Insight**: Post-merge conflict resolution with Ernie 4.5 model updates
+- **Breakthrough Moments**: Issue identification and automated documentation preview
+
+#### TIN Sidekick PR Analysis
+**Collaboration Pattern**: human_ai_debugging_workflow
 
 - **30 Comments** from 3 participants
 - **90 Knowledge Graph Triplets** extracted

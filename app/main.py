@@ -11,6 +11,8 @@ import logging
 from app.config.settings import settings
 from app.services.model_manager import model_manager
 from app.data.test_conversations import TIN_SIDEKICK_PR_CONVERSATION
+from app.data.tin_docs_pr import TIN_DOCS_PR_1
+from app.data.huggingface_pr import HUGGINGFACE_ERNIE_PR
 from datetime import datetime
 
 from app.core.plugin_registry import plugin_registry
@@ -92,6 +94,65 @@ async def test_tin_sidekick_llm_analysis():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Test analysis error: {str(e)}")
+
+@app.post("/api/models/test-tin-docs-analysis")
+async def test_tin_docs_llm_analysis():
+    """Test LLM analysis with real TIN docs PR #1 data"""
+    try:
+        # Use TIN docs PR data from configuration
+        test_pr_data = TIN_DOCS_PR_1
+        
+        result = await model_manager.analyze_pr_conversation(test_pr_data)
+        return {
+            "message": "TIN docs PR #1 analysis completed",
+            "analysis": result,
+            "model_info": {
+                "primary_model": settings.primary_model,
+                "critic_model": settings.critic_model,
+                "critique_enabled": settings.enable_critique
+            },
+            "test_data_info": {
+                "pr_title": test_pr_data["title"],
+                "participants": test_pr_data["participants"],
+                "author": test_pr_data["metadata"]["author"],
+                "is_bot": test_pr_data["metadata"]["is_bot"],
+                "key_features": test_pr_data["metadata"]["key_features"],
+                "technical_achievements": test_pr_data["metadata"]["technical_achievements"]
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TIN docs analysis error: {str(e)}")
+
+@app.post("/api/models/test-huggingface-analysis")
+async def test_huggingface_llm_analysis():
+    """Test LLM analysis with real HuggingFace Transformers PR #39561 data"""
+    try:
+        # Use HuggingFace PR data from configuration
+        test_pr_data = HUGGINGFACE_ERNIE_PR
+        
+        result = await model_manager.analyze_pr_conversation(test_pr_data)
+        return {
+            "message": "HuggingFace Ernie PR analysis completed",
+            "analysis": result,
+            "model_info": {
+                "primary_model": settings.primary_model,
+                "critic_model": settings.critic_model,
+                "critique_enabled": settings.enable_critique
+            },
+            "test_data_info": {
+                "pr_title": test_pr_data["title"],
+                "repository": test_pr_data["repository"],
+                "participants": test_pr_data["participants"],
+                "author": test_pr_data["metadata"]["author"],
+                "conversation_type": test_pr_data["metadata"]["conversation_type"],
+                "collaboration_pattern": test_pr_data["metadata"]["collaboration_pattern"],
+                "models_affected": test_pr_data["metadata"]["technical_context"]["models_affected"]
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"HuggingFace analysis error: {str(e)}")
 
 @app.get("/api/plugins")
 async def list_plugins():
