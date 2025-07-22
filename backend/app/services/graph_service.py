@@ -1,11 +1,11 @@
 import uuid
 from typing import List, Dict, Any
 from datetime import datetime
-from app.models.graph import (
+from ..models.graph import (
     KnowledgeGraph, GraphNode, GraphEdge, GraphTriplet,
     PRConversation, PRComment, GraphAnalysis
 )
-from app.services.llm_service import ollama_service
+from .llm_service import ollama_service
 
 
 class GraphService:

@@ -1,0 +1,28 @@
+{
+  "name": "pr-2-graph-monorepo",
+  "version": "1.0.0",
+  "description": "PR-2-Graph monorepo with FastAPI backend and frontend visualization",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && poetry run uvicorn app.main:app --host 0.0.0.0 --port 7700 --reload",
+    "dev:frontend": "cd frontend && python -m http.server 8080",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "setup": "cd backend && poetry install",
+    "start": "./run_server.sh"
+  },
+  "keywords": [
+    "monorepo",
+    "fastapi",
+    "knowledge-graph",
+    "llm",
+    "d3js"
+  ],
+  "author": "Jack C Crawford",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

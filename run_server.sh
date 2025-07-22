@@ -61,6 +61,9 @@ else
     echo ""
 fi
 
+# Change to backend directory
+cd backend
+
 # Install dependencies if needed
 if [ ! -d ".venv" ] || [ ! -f "poetry.lock" ]; then
     echo -e "${BLUE}📦 Installing dependencies...${NC}"

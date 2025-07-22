@@ -1,7 +1,7 @@
 import httpx
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-from app.models.graph import PRConversation, PRComment
+from ..models.graph import PRConversation, PRComment
 
 
 class GitHubService:

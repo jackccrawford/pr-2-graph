@@ -8,17 +8,17 @@ import json
 import os
 import logging
 
-from app.config.settings import settings
-from app.services.model_manager import model_manager
-from app.data.test_conversations import TIN_SIDEKICK_PR_CONVERSATION
-from app.data.tin_docs_pr import TIN_DOCS_PR_1
-from app.data.huggingface_pr import HUGGINGFACE_ERNIE_PR
+from .config.settings import settings
+from .services.model_manager import model_manager
+from .data.test_conversations import TIN_SIDEKICK_PR_CONVERSATION
+from .data.tin_docs_pr import TIN_DOCS_PR_1
+from .data.huggingface_pr import HUGGINGFACE_ERNIE_PR
 from datetime import datetime
 
-from app.core.plugin_registry import plugin_registry
-from app.plugins.repo_to_graph import RepoToGraphPlugin, repo_to_graph_config
-from app.services.graph_service import graph_service
-from app.models.graph import GraphAnalysis
+from .core.plugin_registry import plugin_registry
+from .plugins.repo_to_graph import RepoToGraphPlugin, repo_to_graph_config
+from .services.graph_service import graph_service
+from .models.graph import GraphAnalysis
 
 app = FastAPI(
     title="pr-2-graph",
@@ -34,6 +34,8 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
 @app.on_event("startup")
 async def startup_event():
