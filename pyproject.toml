@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pr-2-graph"
+version = "0.1.0"
+description = "Transform GitHub PR conversations into interactive knowledge graphs showing collaboration patterns and problem-solving flows"
+authors = [
+    "Jack Crawford <jack@mvara.ai>",
+    "Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>"
+]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/jackccrawford/pr-2-graph"
+repository = "https://github.com/jackccrawford/pr-2-graph"
+keywords = ["github", "pr", "analysis", "knowledge-graph", "collaboration", "visualization"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.116.1"}
+psycopg = {extras = ["binary"], version = "^3.2.9"}
+httpx = "^0.28.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
