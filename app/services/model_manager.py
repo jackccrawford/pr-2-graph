@@ -159,6 +159,9 @@ class SmartModelManager:
         
         conversation_text = self._format_pr_data(pr_data)
         
+        if self.fallback is None:
+            raise RuntimeError("Fallback model not properly initialized")
+        
         response = await self.fallback.generate(
             prompt=f"Analyze this PR conversation:\n\n{conversation_text}",
             system_prompt=system_prompt
