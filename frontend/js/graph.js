@@ -1,14 +1,38 @@
 // Main graph initialization and data loading
 
-// Get analysis ID from URL parameters or use default
-function getAnalysisId() {
+// Get analysis ID from URL parameters or fetch latest
+async function getAnalysisId() {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('analysis') || 'aa685847-42a5-43f6-b8a6-59bf7e9154df'; // Default to complex analysis
+    const paramId = urlParams.get('analysis');
+    
+    if (paramId) {
+        return paramId;
+    }
+    
+    // Fetch latest available analysis
+    try {
+        const response = await fetch('/api/tin-graph/analyses');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.analyses && data.analyses.length > 0) {
+                return data.analyses[data.analyses.length - 1].analysis_id; // Get latest
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching analyses:', error);
+    }
+    
+    return null; // No analyses available
 }
 
 // Load and display graph data
 async function loadGraph() {
-    const analysisId = getAnalysisId();
+    const analysisId = await getAnalysisId();
+    
+    if (!analysisId) {
+        document.getElementById('graph').innerHTML = '<div style="color: #ff6b6b; text-align: center; padding: 50px;">No analyses available. Create one using the API first.</div>';
+        return;
+    }
     
     try {
         // Show loading state

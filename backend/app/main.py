@@ -42,6 +42,13 @@ app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 async def startup_event():
     plugin_registry.register_plugin(RepoToGraphPlugin, repo_to_graph_config)
 
+@app.get("/")
+async def root():
+    """Serve the main frontend HTML file"""
+    with open("../frontend/index.html", "r") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
