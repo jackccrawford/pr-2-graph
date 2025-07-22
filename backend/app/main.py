@@ -18,6 +18,7 @@ from datetime import datetime
 from .core.plugin_registry import plugin_registry
 from .plugins.repo_to_graph import RepoToGraphPlugin, repo_to_graph_config
 from .services.graph_service import graph_service
+from .services.enhanced_graph_service import enhanced_graph_service
 from .models.graph import GraphAnalysis
 
 app = FastAPI(
@@ -287,6 +288,124 @@ async def test_llm_analysis():
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM analysis error: {str(e)}")
+
+# TIN Node Graph Integration Endpoints
+
+@app.post("/api/tin-graph/analyze")
+async def create_persistent_analysis(input_data: Dict[str, Any]):
+    """Create analysis with TIN Node Graph persistent storage"""
+    try:
+        # Convert input data to PRConversation format
+        from .models.graph import PRConversation, PRComment
+        
+        comments = []
+        if "comments" in input_data:
+            for comment_data in input_data["comments"]:
+                comments.append(PRComment(
+                    id=comment_data.get("id", ""),
+                    author=comment_data.get("author", ""),
+                    body=comment_data.get("body", ""),
+                    created_at=comment_data.get("created_at", "")
+                ))
+        
+        conversation = PRConversation(
+            pr_number=input_data.get("pr_number", 1),
+            repository=input_data.get("repository", "unknown"),
+            title=input_data.get("title", "Untitled PR"),
+            comments=comments
+        )
+        
+        # Create analysis with persistent storage
+        analysis_id = await enhanced_graph_service.create_analysis(conversation)
+        
+        return {
+            "message": "Analysis created with TIN Node Graph persistent storage",
+            "analysis_id": analysis_id,
+            "persistent_storage": enhanced_graph_service.use_persistent_storage,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Persistent analysis error: {str(e)}")
+
+@app.get("/api/tin-graph/analyses")
+async def list_persistent_analyses():
+    """List all analyses from memory and persistent storage"""
+    try:
+        analyses = enhanced_graph_service.list_analyses()
+        return {
+            "analyses": analyses,
+            "total_count": len(analyses),
+            "persistent_storage_enabled": enhanced_graph_service.use_persistent_storage
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"List analyses error: {str(e)}")
+
+@app.get("/api/tin-graph/analysis/{analysis_id}")
+async def get_persistent_analysis(analysis_id: str):
+    """Get analysis from memory or persistent storage"""
+    try:
+        analysis = enhanced_graph_service.get_analysis(analysis_id)
+        if not analysis:
+            raise HTTPException(status_code=404, detail=f"Analysis {analysis_id} not found")
+        
+        return {
+            "analysis_id": analysis_id,
+            "analysis": {
+                "id": analysis.id,
+                "created_at": analysis.created_at,
+                "node_count": len(analysis.nodes),
+                "relationship_count": len(analysis.relationships),
+                "metadata": analysis.metadata
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get analysis error: {str(e)}")
+
+@app.get("/api/tin-graph/visualization/{analysis_id}")
+async def get_persistent_visualization(analysis_id: str):
+    """Get visualization data from persistent storage"""
+    try:
+        viz_data = enhanced_graph_service.export_for_visualization(analysis_id)
+        if not viz_data:
+            raise HTTPException(status_code=404, detail=f"Visualization data for {analysis_id} not found")
+        
+        return viz_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Visualization export error: {str(e)}")
+
+@app.post("/api/tin-graph/test-tin-docs")
+async def test_persistent_tin_docs_analysis():
+    """Test TIN Node Graph integration with TIN docs PR data"""
+    try:
+        # Use existing TIN docs test data
+        test_pr_data = TIN_DOCS_PR_1
+        
+        # Create analysis with persistent storage
+        analysis_id = await create_persistent_analysis(test_pr_data)
+        
+        # Get the created analysis
+        analysis = enhanced_graph_service.get_analysis(analysis_id["analysis_id"])
+        
+        return {
+            "message": "TIN docs PR analysis with persistent storage completed",
+            "analysis_id": analysis_id["analysis_id"],
+            "persistent_storage": enhanced_graph_service.use_persistent_storage,
+            "results": {
+                "node_count": len(analysis.nodes) if analysis else 0,
+                "relationship_count": len(analysis.relationships) if analysis else 0,
+                "storage_type": "SQLite Triple Store" if enhanced_graph_service.use_persistent_storage else "In-Memory"
+            },
+            "visualization_url": f"/api/tin-graph/visualization/{analysis_id['analysis_id']}",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TIN docs persistent test error: {str(e)}")
 
 def generate_d3_visualization_html(graph_data: dict, analysis_id: str) -> str:
     """Generate HTML with embedded D3.js visualization"""
