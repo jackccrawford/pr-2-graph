@@ -45,21 +45,13 @@ class EnhancedGraphService:
         
         knowledge_graph = await self._extract_knowledge_graph(conversation)
         
-        # Create GraphAnalysis compatible with both old and new format
+        # Create GraphAnalysis compatible with the expected model structure
         analysis = GraphAnalysis(
-            id=analysis_id,
-            nodes=knowledge_graph.nodes,
-            relationships=knowledge_graph.triplets,
-            metadata={
-                "conversation": {
-                    "pr_number": getattr(conversation, 'pr_number', None),
-                    "repository": getattr(conversation, 'repository', None),
-                    "title": getattr(conversation, 'title', None)
-                },
-                "statistics": self._calculate_statistics(knowledge_graph),
-                "extraction_method": "semantic_analysis"
-            },
-            created_at=datetime.utcnow().isoformat()
+            analysis_id=analysis_id,
+            conversation=conversation,
+            knowledge_graph=knowledge_graph,
+            created_at=datetime.utcnow(),
+            statistics=self._calculate_statistics(knowledge_graph)
         )
         
         # Store in memory for backward compatibility
@@ -68,7 +60,24 @@ class EnhancedGraphService:
         # Store persistently if enabled
         if self.use_persistent_storage and self.pr_adapter:
             try:
-                persistent_id = self.pr_adapter.store_graph_analysis(analysis)
+                # Create a compatible object for the PR adapter
+                adapter_analysis = type('GraphAnalysis', (), {
+                    'id': analysis_id,
+                    'nodes': knowledge_graph.nodes,
+                    'relationships': knowledge_graph.triplets,
+                    'metadata': {
+                        "conversation": {
+                            "pr_number": getattr(conversation, 'pr_number', None),
+                            "repository": getattr(conversation, 'repository', None),
+                            "title": getattr(conversation, 'title', None)
+                        },
+                        "statistics": self._calculate_statistics(knowledge_graph),
+                        "extraction_method": "semantic_analysis"
+                    },
+                    'created_at': datetime.utcnow().isoformat()
+                })()
+                
+                persistent_id = self.pr_adapter.store_graph_analysis(adapter_analysis)
                 self.logger.info(f"Analysis {analysis_id} stored persistently as {persistent_id}")
             except Exception as e:
                 self.logger.error(f"Failed to store analysis persistently: {e}")
@@ -105,10 +114,10 @@ class EnhancedGraphService:
         for analysis_id, analysis in list(self.analyses.items())[:limit]:
             analyses.append({
                 "analysis_id": analysis_id,
-                "title": analysis.metadata.get("conversation", {}).get("title", "Untitled Analysis"),
+                "title": getattr(analysis.conversation, 'title', 'Untitled Analysis'),
                 "created_at": analysis.created_at,
-                "node_count": len(analysis.nodes),
-                "relationship_count": len(analysis.relationships),
+                "node_count": len(analysis.knowledge_graph.nodes),
+                "relationship_count": len(analysis.knowledge_graph.triplets),
                 "source": "memory"
             })
         
@@ -148,22 +157,22 @@ class EnhancedGraphService:
                         "type": node.type,
                         "properties": node.properties
                     }
-                    for node in analysis.nodes
+                    for node in analysis.knowledge_graph.nodes
                 ],
                 "links": [
                     {
                         "source": rel.subject,
                         "target": rel.object,
                         "relationship": rel.predicate,
-                        "properties": rel.properties
+                        "properties": rel.metadata
                     }
-                    for rel in analysis.relationships
+                    for rel in analysis.knowledge_graph.triplets
                 ],
                 "metadata": {
                     "analysis_id": analysis_id,
                     "created_at": analysis.created_at,
-                    "node_count": len(analysis.nodes),
-                    "relationship_count": len(analysis.relationships)
+                    "node_count": len(analysis.knowledge_graph.nodes),
+                    "relationship_count": len(analysis.knowledge_graph.triplets)
                 }
             }
         

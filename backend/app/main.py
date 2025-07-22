@@ -299,19 +299,36 @@ async def create_persistent_analysis(input_data: Dict[str, Any]):
         from .models.graph import PRConversation, PRComment
         
         comments = []
+        participants = set()
         if "comments" in input_data:
             for comment_data in input_data["comments"]:
+                author = comment_data.get("author", "unknown")
+                participants.add(author)
+                
+                # Handle datetime parsing
+                created_at_str = comment_data.get("created_at", "")
+                if isinstance(created_at_str, str) and created_at_str:
+                    try:
+                        created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                    except:
+                        created_at = datetime.utcnow()
+                else:
+                    created_at = datetime.utcnow()
+                
                 comments.append(PRComment(
                     id=comment_data.get("id", ""),
-                    author=comment_data.get("author", ""),
+                    author=author,
                     body=comment_data.get("body", ""),
-                    created_at=comment_data.get("created_at", "")
+                    created_at=created_at
                 ))
         
         conversation = PRConversation(
             pr_number=input_data.get("pr_number", 1),
             repository=input_data.get("repository", "unknown"),
             title=input_data.get("title", "Untitled PR"),
+            description=input_data.get("description", "No description provided"),
+            participants=list(participants) if participants else ["unknown"],
+            created_at=datetime.utcnow(),
             comments=comments
         )
         
@@ -352,11 +369,11 @@ async def get_persistent_analysis(analysis_id: str):
         return {
             "analysis_id": analysis_id,
             "analysis": {
-                "id": analysis.id,
+                "id": analysis.analysis_id,
                 "created_at": analysis.created_at,
-                "node_count": len(analysis.nodes),
-                "relationship_count": len(analysis.relationships),
-                "metadata": analysis.metadata
+                "node_count": len(analysis.knowledge_graph.nodes),
+                "relationship_count": len(analysis.knowledge_graph.triplets),
+                "metadata": analysis.statistics
             }
         }
     except HTTPException:
@@ -385,22 +402,59 @@ async def test_persistent_tin_docs_analysis():
         # Use existing TIN docs test data
         test_pr_data = TIN_DOCS_PR_1
         
+        # Convert to PRConversation format
+        from .models.graph import PRConversation, PRComment
+        
+        comments = []
+        participants = set()
+        if "comments" in test_pr_data:
+            for comment_data in test_pr_data["comments"]:
+                author = comment_data.get("author", "unknown")
+                participants.add(author)
+                
+                # Handle datetime parsing
+                created_at_str = comment_data.get("created_at", "")
+                if isinstance(created_at_str, str) and created_at_str:
+                    try:
+                        created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                    except:
+                        created_at = datetime.utcnow()
+                else:
+                    created_at = datetime.utcnow()
+                
+                comments.append(PRComment(
+                    id=comment_data.get("id", ""),
+                    author=author,
+                    body=comment_data.get("body", ""),
+                    created_at=created_at
+                ))
+        
+        conversation = PRConversation(
+            pr_number=test_pr_data.get("pr_number", 1),
+            repository=test_pr_data.get("repository", "unknown"),
+            title=test_pr_data.get("title", "Untitled PR"),
+            description=test_pr_data.get("description", "No description provided"),
+            participants=list(participants) if participants else ["unknown"],
+            created_at=datetime.utcnow(),
+            comments=comments
+        )
+        
         # Create analysis with persistent storage
-        analysis_id = await create_persistent_analysis(test_pr_data)
+        analysis_id = await enhanced_graph_service.create_analysis(conversation)
         
         # Get the created analysis
-        analysis = enhanced_graph_service.get_analysis(analysis_id["analysis_id"])
+        analysis = enhanced_graph_service.get_analysis(analysis_id)
         
         return {
             "message": "TIN docs PR analysis with persistent storage completed",
-            "analysis_id": analysis_id["analysis_id"],
+            "analysis_id": analysis_id,
             "persistent_storage": enhanced_graph_service.use_persistent_storage,
             "results": {
-                "node_count": len(analysis.nodes) if analysis else 0,
-                "relationship_count": len(analysis.relationships) if analysis else 0,
+                "node_count": len(analysis.knowledge_graph.nodes) if analysis else 0,
+                "relationship_count": len(analysis.knowledge_graph.triplets) if analysis else 0,
                 "storage_type": "SQLite Triple Store" if enhanced_graph_service.use_persistent_storage else "In-Memory"
             },
-            "visualization_url": f"/api/tin-graph/visualization/{analysis_id['analysis_id']}",
+            "visualization_url": f"/api/tin-graph/visualization/{analysis_id}",
             "timestamp": datetime.utcnow().isoformat()
         }
         
