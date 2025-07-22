@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 import httpx
 from app.config.settings import settings, get_model_config, get_memory_config, get_ollama_config
+from app.config.prompts import ANALYSIS_SYSTEM_PROMPTS
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ class SmartModelManager:
         self.primary = OllamaClient(self.model_config["primary"])
         self.critic = OllamaClient(self.model_config["critic"])
         self.embeddings = OllamaClient(self.model_config["embeddings"])
+        self.formatter = OllamaClient(self.model_config["formatter"])
         
         # On-demand models
         self.fallback: Optional[OllamaClient] = None
@@ -96,17 +98,8 @@ class SmartModelManager:
             return await self._fallback_analysis(pr_data)
     
     async def _primary_analysis(self, pr_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Primary analysis using gemma3n:e2b."""
-        system_prompt = """You are an expert at analyzing GitHub PR conversations and extracting collaboration patterns.
-        
-        Analyze the conversation and identify:
-        1. Key relationships between participants (ANALYZES, IMPLEMENTS, FIXES, SUGGESTS, etc.)
-        2. Breakthrough moments where problems are solved
-        3. Participant roles and contributions
-        4. Technical decision points
-        
-        Return a structured JSON response."""
-        
+        """Primary analysis using configured model."""
+        system_prompt = ANALYSIS_SYSTEM_PROMPTS["primary_analyzer"]
         conversation_text = self._format_pr_data(pr_data)
         
         response = await self.primary.generate(
@@ -118,17 +111,8 @@ class SmartModelManager:
         return self._parse_analysis_response(response)
     
     async def _critic_review(self, pr_data: Dict[str, Any], analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """Critic review using qwen3:1.7b."""
-        system_prompt = """You are a quality assurance critic for PR conversation analysis.
-        
-        Review the analysis for:
-        1. Accuracy - Are relationships supported by the text?
-        2. Completeness - Are important patterns missing?
-        3. Confidence - Are confidence scores realistic?
-        4. Consistency - Do all relationships make sense together?
-        
-        Provide specific, actionable feedback."""
-        
+        """Critic review using configured model."""
+        system_prompt = ANALYSIS_SYSTEM_PROMPTS["critic_reviewer"]
         conversation_text = self._format_pr_data(pr_data)
         analysis_text = str(analysis)
         

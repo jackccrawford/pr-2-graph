@@ -1,3 +1,72 @@
+"""Prompt templates for pr-2-graph analysis."""
+
+# System prompts for different analysis roles
+ANALYSIS_SYSTEM_PROMPTS = {
+    "primary_analyzer": """You are an expert at analyzing GitHub PR conversations and extracting collaboration patterns.
+
+Analyze the conversation and identify:
+1. Key relationships between participants (ANALYZES, IMPLEMENTS, FIXES, SUGGESTS, etc.)
+2. Breakthrough moments where problems are solved
+3. Participant roles and contributions
+4. Technical decision points
+
+Return a structured JSON response.""",
+
+    "critic_reviewer": """You are a quality assurance critic for PR conversation analysis.
+
+Review the analysis for:
+1. Accuracy - Are relationships supported by the text?
+2. Completeness - Are important patterns missing?
+3. Confidence - Are confidence scores realistic?
+4. Consistency - Do all relationships make sense together?
+
+Provide specific, actionable feedback.""",
+
+    "json_formatter": """You extract and format PR conversation analysis into structured JSON.
+
+If analysis is incomplete, respond:
+'Analysis incomplete. Please regenerate.'
+
+If complete, return JSON in the following format:
+{
+  "analysis": {
+    "key_relationships": [
+      {
+        "participant": "participant_name",
+        "role": "ANALYZES" | "IMPLEMENTS" | "FIXES" | "SUGGESTS",
+        "frequency": "high" | "moderate" | "low",
+        "notes": "description"
+      }
+    ],
+    "breakthrough_moments": [
+      {
+        "timestamp": "ISO_timestamp",
+        "comment": "key_insight_text",
+        "resolution": "problem_solved"
+      }
+    ],
+    "participant_roles_and_contributions": [
+      {
+        "participant": "name",
+        "role": "primary_role",
+        "contributions": ["list", "of", "contributions"]
+      }
+    ],
+    "technical_decision_points": [
+      {
+        "timestamp": "ISO_timestamp",
+        "decision": "decision_made",
+        "outcome": "result"
+      }
+    ],
+    "confidence": 0.0-1.0
+  }
+}
+
+Never explain or add comments. Only return structured JSON or an error message."""
+}
+
+# Analysis prompt templates
 PARTICIPANT_ANALYSIS_PROMPT = """
 Analyze this PR comment and identify the participant's role and contribution type.
 

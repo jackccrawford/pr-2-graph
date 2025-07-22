@@ -10,6 +10,7 @@ import logging
 
 from app.config.settings import settings
 from app.services.model_manager import model_manager
+from app.data.test_conversations import TIN_SIDEKICK_PR_CONVERSATION
 from datetime import datetime
 
 from app.core.plugin_registry import plugin_registry
@@ -70,46 +71,8 @@ async def direct_llm_analysis(input_data: Dict[str, Any]):
 async def test_tin_sidekick_llm_analysis():
     """Test LLM analysis with real TIN Sidekick PR data"""
     try:
-        # Create realistic TIN Sidekick PR conversation data
-        test_pr_data = {
-            "pr_number": 1,
-            "repository": "mvara-ai/tin-sidekick",
-            "title": "TIN Sidekick Integration - COMPLETE SYSTEM OVERHAUL",
-            "conversation": """
-Comment 1 by jackccrawford:
-Starting comprehensive integration of TIN Sidekick Flutter app with TIN v3 API. 
-Current issues: Authentication using wrong endpoints, message format mismatches, UI showing duplicate messages.
-
-Comment 2 by devin-ai-integration[bot]:
-I'll help analyze the authentication flow. The app is using legacy /dev/token endpoints instead of the new TIN v3 two-step auth process. 
-We need to update to use /api/v3/auth/login with proper JWT handling.
-
-Comment 3 by jackccrawford:
-Good catch! Also noticing the message sending payload is wrong. TIN v3 expects JSON object as string in payload field, not direct JSON.
-
-Comment 4 by devin-ai-integration[bot]:
-Exactly! Let me implement the fix for message payload format. Also adding duplicate detection in ChatService to prevent UI issues.
-
-Comment 5 by jackccrawford:
-Breakthrough moment - the "CODE IS TRUTH" principle is key here. We need to verify against actual API responses, not documentation assumptions.
-
-Comment 6 by devin-ai-integration[bot]:
-Implemented comprehensive fixes: 
-1. Updated authentication to TIN v3 format
-2. Fixed message payload JSON structure  
-3. Added smart deduplication in ChatService
-4. Enhanced error handling throughout
-
-Comment 7 by jackccrawford:
-Testing shows zero runtime crashes now! The empirical approach worked perfectly. This represents a complete transformation from broken prototype to production-ready platform.
-
-Comment 8 by devin-ai-integration[bot]:
-Success! The multi-agent collaboration between human insight, AI analysis, and systematic testing created a robust solution. 
-Ready for Phase 2 systematic prevention measures.
-""",
-            "participants": ["jackccrawford", "devin-ai-integration[bot]"],
-            "created_at": "2025-07-21T18:00:00+00:00"
-        }
+        # Use test conversation data from configuration
+        test_pr_data = TIN_SIDEKICK_PR_CONVERSATION
         
         result = await model_manager.analyze_pr_conversation(test_pr_data)
         return {

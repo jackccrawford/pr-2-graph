@@ -1,83 +1,66 @@
-# pr-2-graph 📊
+# pr-2-graph
+## GitHub PR Conversation Analysis and Knowledge Graph Generation
 
-Transform GitHub PR conversations into interactive knowledge graphs showing collaboration patterns, problem-solving flows, and breakthrough moments.
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![Poetry](https://img.shields.io/badge/Poetry-2.1.3-60A5FA?style=for-the-badge&logo=poetry&logoColor=white)](https://python-poetry.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Pydantic](https://img.shields.io/badge/Pydantic-2.11.7-E92063?style=for-the-badge&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
+[![D3.js](https://img.shields.io/badge/D3.js-Interactive_Graphs-F9A03C?style=for-the-badge&logo=d3.js&logoColor=white)](https://d3js.org/)
+[![Ollama](https://img.shields.io/badge/Ollama-LLM_Integration-4285F4?style=for-the-badge)](https://ollama.ai/)
+[![Status](https://img.shields.io/badge/Status-Active_Development-EAB308?style=for-the-badge)]()
+[![Architecture](https://img.shields.io/badge/Architecture-Plugin_Based-9ca3af?style=for-the-badge)]()
+[![Analysis](https://img.shields.io/badge/Analysis-Multi--Agent-ff69b4?style=for-the-badge)]()
+[![Visualization](https://img.shields.io/badge/Visualization-Interactive-22C55E?style=for-the-badge)]()
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-green.svg)](https://fastapi.tiangolo.com/)
+> **Note**: This project is currently under active development. APIs are stable with comprehensive documentation.
 
-## 🌟 Overview
+## Overview
 
-**pr-2-graph** is an open-source tool that analyzes GitHub Pull Request conversations and transforms them into interactive knowledge graphs. Perfect for understanding team collaboration patterns, identifying breakthrough moments, and visualizing complex problem-solving flows.
+pr-2-graph is an open-source tool that analyzes GitHub Pull Request conversations and transforms them into interactive knowledge graphs. Originally developed as part of Devin AI's plugin system, it has been generalized to help development teams understand collaboration patterns, identify breakthrough moments, and visualize problem-solving flows.
 
-### ✨ Key Features
+## Architecture: Multi-Model LLM Analysis Pipeline
 
-- **🤝 Multi-Agent Analysis** - Designed for human-AI collaboration patterns
-- **🧠 Semantic Relationship Extraction** - Identifies ANALYZES, IMPLEMENTS, FIXES, REVIEWS relationships  
-- **📊 Interactive Visualizations** - D3.js physics-based graphs with hover details
-- **🔍 Breakthrough Detection** - Spots novel insights that changed conversation direction
-- **🎯 Role Analysis** - Distinguishes between strategic analysts, implementers, and coordinators
-- **📈 Pattern Recognition** - Learns what collaboration styles produce the best results
+This system follows a sophisticated multi-stage analysis pattern:
 
-## 🏠 Architecture
+1. **Primary Analysis**: Advanced LLM models extract semantic relationships and collaboration patterns
+2. **Critic Review**: Secondary models validate analysis accuracy and completeness
+3. **Structured Output**: Specialized formatter models ensure consistent JSON output
+4. **Interactive Visualization**: D3.js physics-based knowledge graphs with real-time interaction
 
-### 🔧 Core Components
+## Key Features
 
-- **📋 Analysis Engine** (`app/core/analyzer.py`) - Main PR conversation analysis
-- **🔗 GitHub Integration** (`app/services/github_service.py`) - Fetch PR data from GitHub API
-- **🧠 Knowledge Graph Builder** (`app/models/graph.py`) - Construct nodes, edges, and relationships
-- **🔌 Relationship Extractor** (`app/services/graph_service.py`) - Semantic relationship detection
-- **🎨 Visualization Engine** (`app/exporters/`) - Interactive D3.js graphs and static exports
+### Semantic Analysis
+- Extract relationships, roles, and collaboration patterns from PR conversations
+- Identify participant contributions and expertise domains
+- Map technical decision points and their outcomes
+- Support for complex multi-participant discussions
 
-### 📌 Extensible Design
+### Breakthrough Detection
+- Identify key problem-solving moments and insights
+- Track resolution patterns and solution emergence
+- Analyze collaboration effectiveness and team dynamics
+- Detect innovation and creative problem-solving instances
 
-Built with modularity in mind:
+### Multi-Agent Support
+- Specialized analysis for human-AI collaboration patterns
+- Recognition of different agent types and their contributions
+- Analysis of coordination patterns in mixed teams
+- Support for complex multi-agent workflows
 
-1. **🔌 Pluggable Analysis** - Add new relationship extractors
-2. **🎨 Multiple Export Formats** - D3.js, PNG, SVG, JSON, GraphML
-3. **⚙️ Configurable Rules** - Customize relationship detection patterns
-4. **🔗 API Integration** - Works with any GitHub repository
+### Interactive Visualization
+- D3.js-powered knowledge graphs with physics simulation
+- Real-time interaction with hover details and drag functionality
+- Customizable node and edge styling based on relationship types
+- Export capabilities for presentations and documentation
 
-## 🎯 Use Cases
+### Extensible Architecture
+- Plugin system for custom analysis types
+- Configurable LLM models and analysis parameters
+- Environment-driven configuration management
+- Professional deployment patterns with health monitoring
 
-### 📈 For Development Teams
-
-- **Team Retrospectives** - "How did we solve this complex issue?"
-- **Onboarding** - Show new developers how experienced teams collaborate
-- **Process Improvement** - Identify patterns that lead to faster problem resolution
-- **Knowledge Transfer** - Visualize how expertise flows through the team
-
-### 🔬 For Researchers
-
-- **Human-AI Collaboration Studies** - Analyze how AI agents work with human developers
-- **Software Engineering Research** - Study communication patterns in distributed teams
-- **Collaboration Pattern Analysis** - Identify what makes teams successful
-
-### Extracted Relationships
-
-The plugin identifies these types of semantic relationships:
-
-- **Participant Actions**: `Cascade ANALYZES authentication_issue`, `Devin IMPLEMENTS message_parsing_fix`
-- **Temporal Relationships**: `Comment_5 REPLIES_TO Comment_4`, `Fix_Applied FOLLOWS Problem_Identified`
-- **Problem-Solving Chains**: `Authentication_Issue CAUSES Server_Errors`, `Message_Format_Fix RESOLVES API_Errors`
-- **Technical Relationships**: `Flutter_App INTEGRATES_WITH TIN_API`, `JWT_Token AUTHENTICATES API_Calls`
-
-## API Endpoints
-
-### Core Endpoints
-
-- `GET /health` - Health check
-- `GET /api/plugins` - List all available plugins
-
-### Repo to Graph Plugin Endpoints
-
-- `POST /api/plugins/repo-to-graph/analyze` - Analyze PR conversation
-- `GET /api/plugins/repo-to-graph/graph/{analysis_id}` - Get knowledge graph
-- `POST /api/plugins/repo-to-graph/test-tin-sidekick` - Test with tin-sidekick data
-- `POST /api/plugins/repo-to-graph/test-llm-analysis` - Test LLM-enhanced analysis
-- `GET /api/plugins/repo-to-graph/visualize/{analysis_id}` - Interactive D3.js visualization
-
-## Installation & Setup
+## Installation
 
 ### Prerequisites
 
@@ -195,4 +178,8 @@ To add a new plugin:
 
 ## License
 
-This project is part of the Devin ecosystem for analyzing AI agent interactions.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+**Jack C Crawford** - *Initial work*

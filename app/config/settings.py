@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     critic_model: str = Field(env="CRITIC_MODEL")
     embeddings_model: str = Field(env="EMBEDDINGS_MODEL")
     fallback_model: str = Field(env="FALLBACK_MODEL")
+    formatter_model: str = Field(env="FORMATTER_MODEL")
     
     # Memory Management
     max_memory_gb: float = Field(env="MAX_MEMORY_GB")
@@ -59,6 +60,7 @@ def get_model_config():
         "critic": settings.critic_model,
         "embeddings": settings.embeddings_model,
         "fallback": settings.fallback_model,
+        "formatter": settings.formatter_model,
     }
 
 
