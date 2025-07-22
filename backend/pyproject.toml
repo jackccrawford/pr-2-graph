@@ -20,6 +20,9 @@ psycopg = {extras = ["binary"], version = "^3.2.9"}
 python-dotenv = "^1.0.0"
 httpx = "^0.28.1"
 pydantic-settings = "^2.10.1"
+# TIN Node Graph dependencies
+networkx = "^3.2"
+requests = "^2.31.0"
 
 
 [build-system]
