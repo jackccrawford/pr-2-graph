@@ -7,8 +7,8 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 
 import httpx
-from app.config.settings import settings, get_model_config, get_memory_config, get_ollama_config
-from app.config.prompts import ANALYSIS_SYSTEM_PROMPTS
+from ..config.settings import settings, get_model_config, get_memory_config, get_ollama_config
+from ..config.prompts import ANALYSIS_SYSTEM_PROMPTS
 
 logger = logging.getLogger(__name__)
 

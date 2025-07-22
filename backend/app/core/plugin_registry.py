@@ -1,5 +1,5 @@
 from typing import Dict, List, Type
-from app.plugins.base import BasePlugin, PluginConfig
+from ..plugins.base import BasePlugin, PluginConfig
 
 
 class PluginRegistry:

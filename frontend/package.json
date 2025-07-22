@@ -1,0 +1,21 @@
+{
+  "name": "pr-2-graph-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for PR-2-Graph knowledge graph visualization",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "build": "echo 'No build step required for vanilla JS'",
+    "serve": "python -m http.server 8080"
+  },
+  "keywords": [
+    "knowledge-graph",
+    "d3js",
+    "visualization",
+    "pr-analysis"
+  ],
+  "author": "Jack C Crawford",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

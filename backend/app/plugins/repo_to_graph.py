@@ -1,9 +1,9 @@
 import json
 from typing import Dict, Any, List
 from datetime import datetime
-from app.plugins.base import BasePlugin, PluginConfig, PluginResult
-from app.models.graph import PRConversation, PRComment
-from app.services.graph_service import graph_service
+from .base import BasePlugin, PluginConfig, PluginResult
+from ..models.graph import PRConversation, PRComment
+from ..services.graph_service import graph_service
 
 
 class RepoToGraphPlugin(BasePlugin):

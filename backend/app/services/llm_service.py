@@ -64,7 +64,7 @@ class OllamaService:
     
     async def analyze_participant_role(self, comment: Dict[str, Any], model: str = "llama3.2:1b") -> Dict[str, Any]:
         """Analyze participant role and contribution type"""
-        from app.config.prompts import PARTICIPANT_ANALYSIS_PROMPT
+        from .config.prompts import PARTICIPANT_ANALYSIS_PROMPT
         
         prompt = PARTICIPANT_ANALYSIS_PROMPT.format(
             author=comment["author"],
@@ -91,7 +91,7 @@ class OllamaService:
     
     async def extract_relationships(self, entity1: Dict[str, Any], entity2: Dict[str, Any], context: str, model: str = "llama3.2:1b") -> Dict[str, Any]:
         """Extract semantic relationships between entities"""
-        from app.config.prompts import RELATIONSHIP_EXTRACTION_PROMPT
+        from .config.prompts import RELATIONSHIP_EXTRACTION_PROMPT
         
         prompt = RELATIONSHIP_EXTRACTION_PROMPT.format(
             entity1_type=entity1.get("type", "unknown"),
@@ -120,7 +120,7 @@ class OllamaService:
     
     async def identify_breakthrough_moments(self, comments: List[Dict[str, Any]], model: str = "llama3.2:1b") -> Dict[str, Any]:
         """Identify breakthrough moments and insights in conversation"""
-        from app.config.prompts import BREAKTHROUGH_ANALYSIS_PROMPT
+        from .config.prompts import BREAKTHROUGH_ANALYSIS_PROMPT
         
         conversation_text = "\n\n".join([
             f"[{comment['author']} at {comment['created_at']}]: {comment['body'][:500]}"
