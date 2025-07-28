@@ -19,6 +19,55 @@
 
 pr-2-graph is an open-source tool that analyzes GitHub Pull Request conversations and transforms them into interactive knowledge graphs. Originally developed as part of Devin AI's plugin system, it has been generalized to help development teams understand collaboration patterns, identify breakthrough moments, and visualize problem-solving flows.
 
+## 🚧 Project Status & Roadmap
+
+### ✅ Current Features
+- Ollama integration for local LLM inference
+- Custom model files for PR analysis
+- API endpoints for PR analysis and visualization
+- Basic D3.js visualization
+
+### 🚀 High-Priority TODOs
+
+#### 1. User Interface
+- [ ] Web-based dashboard for PR selection and visualization
+- [ ] Interactive graph exploration interface
+- [ ] User authentication (GitHub OAuth)
+- [ ] Progress indicators for analysis tasks
+
+#### 2. GitHub Integration
+- [ ] Direct GitHub PR browsing and selection
+- [ ] Real-time status updates
+- [ ] Repository management
+- [ ] User preferences and history
+
+#### 3. Enhanced Visualization
+- [ ] Interactive filtering and exploration
+- [ ] Timeline view of PR evolution
+- [ ] Export options (PNG, SVG, JSON)
+- [ ] Custom graph layouts
+
+#### 4. Deployment & Operations
+- [ ] Docker containerization
+- [ ] Cloud deployment guides
+- [ ] Configuration management
+- [ ] Monitoring and logging
+
+#### 5. Documentation
+- [ ] User guide
+- [ ] API documentation
+- [ ] Development setup
+- [ ] Contribution guidelines
+
+### 🌟 Future Enhancements
+- Team collaboration features
+- Advanced analytics
+- Integration with project management tools
+- Support for other VCS platforms
+
+*Contributions are welcome! See [Contributing](#contributing) for details.*
+
+
 ## Architecture: Multi-Model LLM Analysis Pipeline
 
 pr-2-graph uses a sophisticated three-stage LLM pipeline with custom Ollama models, each specialized for specific aspects of PR conversation analysis:
